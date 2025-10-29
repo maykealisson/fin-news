@@ -9,6 +9,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/joho/godotenv"
 	"github.com/maykealisson/fin-news/clients"
+	"github.com/maykealisson/fin-news/config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -44,7 +45,8 @@ func BuscarNoticias(ativo string) ([]Noticia, error) {
 		return nil, fmt.Errorf("FINLIGHT_KEY não encontrada no .env")
 	}
 
-	finlightClient := clients.NewFinlightClient(apiKey)
+	redisClient := config.NewRedisClient()
+	finlightClient := clients.NewFinlightClient(apiKey, redisClient)
 
 	// Implementa retry com backoff exponencial
 	operation := func() ([]Noticia, error) {

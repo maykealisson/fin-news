@@ -1,5 +1,7 @@
 # Fin News API
 
+## Versao - 0.0.1
+
 ## Configuração
 
 ```bash
@@ -32,5 +34,5 @@ Query Parameters:
 - ativo: Código do ativo (ex: PETR4)
 
 ```bash
-curl "http://localhost:8080/noticias?ativo=PETR4"
+curl "http://localhost:3001/noticias?ativo=PETR4"
 ```

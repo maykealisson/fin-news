@@ -6,6 +6,9 @@ import (
 )
 
 func HandlerRequests() {
+	// Initialize Redis
+	redisClient := config.NewRedisClient()
+	defer redisClient.Close()
 
 	server := config.SetupGin()
 
