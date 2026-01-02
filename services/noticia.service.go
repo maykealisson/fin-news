@@ -2,20 +2,15 @@ package services
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/joho/godotenv"
 	"github.com/maykealisson/fin-news/clients"
-	"github.com/maykealisson/fin-news/config"
 	log "github.com/sirupsen/logrus"
 )
 
 // Constantes para configuração
 const (
-	maxRetries     = 3
 	defaultTimeout = 10 * time.Second
 )
 
@@ -28,37 +23,39 @@ type Noticia struct {
 	Images []string `json:"images"`
 }
 
-func BuscarNoticias(ativo string) ([]Noticia, error) {
-	logger := log.WithFields(log.Fields{
-		"service": "noticia",
-		"ativo":   ativo,
-	})
+// INoticiaService define a interface para o serviço de notícias
+type INoticiaService interface {
+	BuscarNoticias(ativo string) ([]Noticia, error)
+}
 
-	if err := godotenv.Load(); err != nil {
-		logger.Error("Erro ao carregar .env")
-		return nil, fmt.Errorf("erro ao carregar .env: %v", err)
+// NoticiaService implementa INoticiaService
+type NoticiaService struct {
+	client clients.IFinlightClient
+	logger *log.Entry
+}
+
+// NewNoticiaService cria uma nova instância do serviço de notícias
+func NewNoticiaService(client clients.IFinlightClient) *NoticiaService {
+	return &NoticiaService{
+		client: client,
+		logger: log.WithField("service", "noticia"),
 	}
+}
 
-	apiKey := os.Getenv("FINLIGHT_KEY")
-	if apiKey == "" {
-		logger.Error("FINLIGHT_KEY não encontrada")
-		return nil, fmt.Errorf("FINLIGHT_KEY não encontrada no .env")
-	}
-
-	redisClient := config.NewRedisClient()
-	finlightClient := clients.NewFinlightClient(apiKey, redisClient)
+func (s *NoticiaService) BuscarNoticias(ativo string) ([]Noticia, error) {
+	logger := s.logger.WithField("ativo", ativo)
 
 	// Implementa retry com backoff exponencial
 	operation := func() ([]Noticia, error) {
 		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 		defer cancel()
 
-		articles, err := finlightClient.BuscarArtigos(ctx, ativo)
+		articles, err := s.client.BuscarArtigos(ctx, ativo)
 		if err != nil {
 			return nil, err
 		}
 
-		return converterParaNoticias(articles), nil
+		return s.converterParaNoticias(articles), nil
 	}
 
 	// Configuração do backoff
@@ -81,7 +78,7 @@ func BuscarNoticias(ativo string) ([]Noticia, error) {
 	return noticias, nil
 }
 
-func converterParaNoticias(articles []clients.ArticleResponse) []Noticia {
+func (s *NoticiaService) converterParaNoticias(articles []clients.ArticleResponse) []Noticia {
 	noticias := make([]Noticia, len(articles))
 	for i, article := range articles {
 		noticias[i] = Noticia{

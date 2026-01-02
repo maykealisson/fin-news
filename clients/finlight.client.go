@@ -19,8 +19,18 @@ const (
 	cacheDuration  = 24 * time.Hour
 )
 
+// HTTPClient define a interface para um cliente HTTP
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// IFinlightClient define a interface para o cliente Finlight
+type IFinlightClient interface {
+	BuscarArtigos(ctx context.Context, query string) ([]ArticleResponse, error)
+}
+
 type FinlightClient struct {
-	client *http.Client
+	client HTTPClient
 	apiKey string
 	logger *log.Entry
 	redis  *redis.Client
@@ -43,11 +53,16 @@ type ArticlesResponse struct {
 	Articles []ArticleResponse `json:"articles"`
 }
 
-func NewFinlightClient(apiKey string, redisClient *redis.Client) *FinlightClient {
-	return &FinlightClient{
-		client: &http.Client{
+// NewFinlightClient cria uma nova instância do cliente Finlight
+// Agora aceita um HTTPClient para facilitar testes (pode passar nil para usar o default)
+func NewFinlightClient(apiKey string, redisClient *redis.Client, httpClient HTTPClient) *FinlightClient {
+	if httpClient == nil {
+		httpClient = &http.Client{
 			Timeout: defaultTimeout,
-		},
+		}
+	}
+	return &FinlightClient{
+		client: httpClient,
 		apiKey: apiKey,
 		logger: log.WithField("client", "finlight"),
 		redis:  redisClient,

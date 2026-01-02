@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - FINLIGHT_KEY=${FINLIGHT_KEY}
+      - REDIS_ADDR=redis:6379
+      - PORT=3001
+      - ENV=production
+    depends_on:
+      - redis
+    networks:
+      - fin-network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - fin-network
+
+networks:
+  fin-network:
+    driver: bridge

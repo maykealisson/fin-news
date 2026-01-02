@@ -19,6 +19,20 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+// NoticiaController gerencia as requisições relacionadas a notícias
+type NoticiaController struct {
+	service services.INoticiaService
+	logger  *log.Entry
+}
+
+// NewNoticiaController cria uma nova instância do controller
+func NewNoticiaController(service services.INoticiaService) *NoticiaController {
+	return &NoticiaController{
+		service: service,
+		logger:  log.WithField("controller", "noticia"),
+	}
+}
+
 // BuscarNoticias godoc
 // @Summary Busca notícias relacionadas a um ativo
 // @Description Retorna uma lista de notícias financeiras relacionadas ao ativo informado
@@ -30,11 +44,10 @@ type ErrorResponse struct {
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /noticias [get]
-func BuscarNoticias(c *gin.Context) {
-	logger := log.WithFields(log.Fields{
-		"handler": "BuscarNoticias",
-		"method":  c.Request.Method,
-		"path":    c.Request.URL.Path,
+func (n *NoticiaController) BuscarNoticias(c *gin.Context) {
+	logger := n.logger.WithFields(log.Fields{
+		"method": c.Request.Method,
+		"path":   c.Request.URL.Path,
 	})
 
 	ativo := strings.TrimSpace(c.Query("ativo"))
@@ -49,7 +62,7 @@ func BuscarNoticias(c *gin.Context) {
 	logger = logger.WithField("ativo", ativo)
 	logger.Info("Buscando notícias")
 
-	news, err := services.BuscarNoticias(ativo)
+	news, err := n.service.BuscarNoticias(ativo)
 	if err != nil {
 		logger.WithError(err).Error("Erro ao buscar notícias")
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
