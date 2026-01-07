@@ -40,9 +40,9 @@ curl "http://localhost:3001/noticias?ativo=PETR4"
 ## Criar img
 
 ```bash
-docker buildx build --platform=linux/arm64/v8 -t maykealisson/fin-new:{{VERSION}} .
+docker buildx build --platform=linux/arm64/v8 -t maykealisson/fin-news:{{VERSION}} .
 ```
 
 ```bash
-docker push maykealisson/fin-new:{{VERSION}}
+docker push maykealisson/fin-news:{{VERSION}}
 ```
