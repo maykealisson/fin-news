@@ -1,6 +1,6 @@
 # Fin News API
 
-## Versao - 0.0.1
+## Versao - 1.0.0
 
 ## Configuração
 
@@ -35,4 +35,14 @@ Query Parameters:
 
 ```bash
 curl "http://localhost:3001/noticias?ativo=PETR4"
+```
+
+## Criar img
+
+```bash
+docker buildx build --platform=linux/arm64/v8 -t maykealisson/fin-new:{{VERSION}} .
+```
+
+```bash
+docker push maykealisson/fin-new:{{VERSION}}
 ```
