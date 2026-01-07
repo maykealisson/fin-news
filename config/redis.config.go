@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"context"
 
 	"github.com/go-redis/redis/v8"
@@ -9,9 +11,13 @@ import (
 
 func NewRedisClient() *redis.Client {
 	logger := log.WithField("config", "redis")
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		log.Fatal("REDIS_ADDR não encontrada")
+	}
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddr,
 		Password: "", // sem senha por padrão
 		DB:       0,  // use default DB
 	})

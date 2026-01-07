@@ -1,6 +1,6 @@
 # Fin News API
 
-## Versao - 1.0.0
+## Versao - 1.0.1
 
 ## Configuração
 
